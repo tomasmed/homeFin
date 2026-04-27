@@ -1,0 +1,181 @@
+@import "tailwindcss";
+
+
+/* Tailwind v4 utilities */
+
+/* Typography variables */
+:root {
+  --color-primary: #1f2937;
+  --color-secondary: #374151;
+  --color-muted: #6b7280;
+  --color-border: #e5e7eb;
+  --color-bg: #ffffff;
+  --color-header-bg: #f9fafb;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+/* ============================================
+   Category Pills - Visual Polish
+   ============================================ */
+
+/* Pill container */
+.categories-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.categories-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.categories-row-1 {
+  margin-bottom: 0.5rem;
+}
+
+.categories-row-2 {
+  margin-top: 0.25rem;
+  margin-bottom: 0.25rem;
+}
+
+.category-pill {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  min-width: min-content;
+  border: 1px solid transparent;
+}
+
+/* Pill borders - set via inline style using borderColor */
+.category-pill[style*="borderColor"] {
+  border: 1px solid;
+}
+
+/* Top row: name + color chip */
+.top-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Color chip */
+.category-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Category name typography */
+.category-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-primary);
+  line-height: 1.4;
+}
+
+/* Stats row */
+.category-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.category-stats.row {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+/* Transaction total */
+.txn-total {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-secondary);
+}
+
+/* Transaction count */
+.txn-count {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+/* Transaction average (subtle) */
+.txn-avg {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--color-muted);
+  font-style: italic;
+}
+
+/* ============================================
+   Responsive: Horizontal scroll for many pills
+   ============================================ */
+/* Responsive: Horizontal scroll for many pills */
+.categories-grid-scrollable {
+  display: flex;
+  overflow-x: auto;
+  gap: 0.5rem;
+  padding-bottom: 0.5rem;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar (Chrome, Safari, Edge) */
+.categories-grid-scrollable::-webkit-scrollbar {
+  display: none;
+}
+
+.categories-pill-row {
+  display: flex;
+}
+
+/* ============================================
+   Responsive: Adjust for mobile
+   ============================================ */
+
+@media (max-width: 768px) {
+  .category-pill {
+    padding: 0.4rem 0.6rem;
+  }
+
+  .category-name {
+    font-size: 13px;
+  }
+
+  .txntotal, .txn-count, .txn-avg {
+    font-size: 11px;
+  }
+
+  .categories-grid {
+    gap: 0.35rem;
+  }
+
+  .top-row {
+    gap: 0.35rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .category-pill {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .category-name {
+    font-size: 12px;
+  }
+
+  .txntotal, .txn-count, .txn-avg {
+    font-size: 10px;
+  }
+}
