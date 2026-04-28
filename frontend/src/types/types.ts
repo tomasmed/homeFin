@@ -43,6 +43,13 @@ export interface Category {
   color_hex: string
 }
 
+// Form types for category creation
+export interface CategoryFormData {
+  name: string
+  icon_slug: string
+  color_hex?: string
+}
+
 // Query hook types
 export interface UseAccountsResult {
   data: { accounts: Account[] } | undefined

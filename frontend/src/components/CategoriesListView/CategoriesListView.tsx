@@ -1,13 +1,44 @@
-import { useCategories } from '@/hooks/useCategories'
-import type { Category } from '@/types/types';
+import React, { useState } from 'react';
+import { useCategories } from '@/hooks/useCategories';
 
 interface CategoriesListViewProps {
   categories?: Category[];
 }
 
 const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: propCategories }) => {
-  const { data, isLoading, error } = useCategories();
-  
+  const { data, isLoading, error, handleSubmit } = useCategories();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState<CategoryFormData>({
+    name: '',
+    icon_slug: '',
+    color_hex: '#6b7280',
+  });
+
+  // Helper functions for modal
+  const handleCreateClick = () => {
+    setIsModalOpen(true);
+    setFormData({ name: '', icon_slug: '', color_hex: '#6b7280' });
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setFormData({ name: '', icon_slug: '', color_hex: '#6b7280' });
+  };
+
+  const handleFormSubmit = async (form: CategoryFormData) => {
+    try {
+      const result = await handleSubmit(form);
+      console.log('Created category:', result);
+      // Query invalidation handled in hook, so list refreshes automatically
+      handleCloseModal();
+      // Reset form
+      setFormData({ name: '', icon_slug: '', color_hex: '#6b7280' });
+    } catch (err) {
+      console.error('Failed to create category:', err);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
@@ -21,7 +52,7 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="bg-white border border-red-200 rounded-xl shadow-sm overflow-hidden">
@@ -35,10 +66,10 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
       </div>
     );
   }
-  
+
   const finalCategories = propCategories || data?.categories || [];
   const allCategories = finalCategories || [];
-  
+
   if (!allCategories.length) {
     return (
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden p-6">
@@ -52,9 +83,9 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
       </div>
     );
   }
-  
+
   return (
-    <div className="bg-white border border-gray-400 rounded-xl shadow-lg overflow-hidden">
+    <div className="bg-white border border-gray-100 rounded-xl shadow-lg overflow-hidden">
       <div className="p-6">
         <div className="text-center mb-6">
           <h2 className="text-lg font-semibold text-slate-900">
@@ -62,7 +93,23 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
           </h2>
           <p className="text-sm text-slate-500">Manage your spending categories</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-1 gap-4 max-w-4xl mx-auto">
+        
+        <div className="flex justify-between items-center mb-6">
+          <div className="card-title">Manage Categories</div>
+          <button
+            onClick={handleCreateClick}
+            className="btn btn-primary btn-sm"
+            style={{
+              backgroundColor: '#3b82f6',
+              color: '#ffffff',
+              border: 'none',
+            }}
+          >
+            [+] Create New
+          </button>
+        </div>
+        
+        <div className="grid grid-cols-1 sm:grid-cols-1 lg:grid-cols-2 gap-4 max-w-4xl mx-auto">
           {allCategories.map((category: Category) => (
             <CategoryCard
               key={category.id}
@@ -71,6 +118,14 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
           ))}
         </div>
       </div>
+
+      {/* Render modal */}
+      <CreateModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSubmit={handleFormSubmit}
+        formData={formData}
+      />
     </div>
   );
 };
@@ -99,10 +154,22 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         className="p-4 flex flex-col items-center justify-center h-16"
         style={{ background: `linear-gradient(135deg, ${category.color_hex}22 0%, ${category.color_hex}05 100%)` }}
       >
-        <div className="text-center">
-          <div className="font-semibold text-slate-900">{category.name}</div>
-          <div className="text-xs text-slate-500 mt-1">{category.parent_id ? 'Subcategory' : 'Main Category'}</div>
+        <div
+          className="text-3xl mb-1"
+          style={{ fontSize: '2rem', color: category.color_hex, filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))' }}
+        >
+          📊
         </div>
+        <div
+          className="text-xl text-center px-2 w-max mx-auto"
+          style={{ fontSize: '1rem', fontWeight: '500', color: category.color_hex }}
+        >
+          {category.name}
+        </div>
+      </div>
+      <div className="p-3 border-t border-gray-200">
+        <div className="text-sm text-gray-600">Total: $0.00</div>
+        <div className="text-xs text-gray-500">Transactions: 0</div>
       </div>
     </div>
   );

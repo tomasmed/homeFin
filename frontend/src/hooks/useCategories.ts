@@ -1,42 +1,47 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import apiClient from '@/lib/api'
-import type { Category } from '@/types/types'
+import type { Category, CategoryFormData } from '@/types/types'
 
 interface CategoriesResponse {
   categories: Category[]
 }
 
-interface UseCategoriesReturn {
-  data: CategoriesResponse | undefined
-  isLoading: boolean
-  error: Error | null
-}
-
 export function useCategories() {
-  const [data, setData] = useState<CategoriesResponse | undefined>(undefined)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [error, setError] = useState<Error | null>(null)
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        setIsLoading(true)
-        const response = await apiClient.get<CategoriesResponse>('/v1/api/categories')
-        setData(response.data)
-        setError(null)
-      } catch (err) {
-        if (err instanceof Error) {
-          setError(err)
-        } else {
-          setError(new Error('Failed to fetch categories'))
-        }
-      } finally {
-        setIsLoading(false)
-      }
-    }
+  // FETCH query - existing functionality
+  const categoriesQuery = useQuery<CategoriesResponse>({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const response = await apiClient.get<CategoriesResponse>('/v1/api/categories')
+      return response.data
+    },
+  });
 
-    fetchCategories()
-  }, [])
+  // CREATE mutation
+  const createCategoryMutation = useMutation({
+    mutationFn: async (formData: CategoryFormData) => {
+      const response = await apiClient.post('/v1/api/categories', formData);
+      return response.data as { category: Category };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+    onError: (error: Error) => {
+      console.error('Category creation failed:', error);
+    },
+  });
 
-  return { data, isLoading, error } as UseCategoriesReturn
+  // Helper function for form submission
+  const handleSubmit = async (formData: CategoryFormData): Promise<Category> => {
+    const result = await createCategoryMutation.mutateAsync(formData);
+    return result.category;
+  };
+
+  return {
+    ...categoriesQuery,
+    createMutation: createCategoryMutation.mutate,
+    isCreating: createCategoryMutation.isPending,
+    handleSubmit,
+  };
 }
