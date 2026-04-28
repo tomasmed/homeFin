@@ -35,6 +35,14 @@ export interface TransactionCategoryAggregatesArray {
   }>
 }
 
+export interface Category {
+  id: string
+  name: string
+  parent_id: string | null
+  icon_slug: string
+  color_hex: string
+}
+
 // Query hook types
 export interface UseAccountsResult {
   data: { accounts: Account[] } | undefined
