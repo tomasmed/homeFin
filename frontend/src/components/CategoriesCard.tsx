@@ -14,17 +14,6 @@ interface CategoriesCardProps {
     category_id?: string;
     account_id?: string;
   }>;
-  onEdit?: (category: {
-    category_name: string;
-    category_id: string;
-    color_hex: string;
-  }) => void;
-  onDelete?: (category: {
-    category_name: string;
-    category_id: string;
-    color_hex: string;
-  }) => void;
-  onCreate?: () => void;
 }
 
 // Define Row components outside of render
@@ -37,35 +26,9 @@ interface CategoryPillProps {
     count: number;
     average: number;
   };
-  onEdit?: (category: {
-    category_name: string;
-    category_id: string;
-    color_hex: string;
-  }) => void;
-  onDelete?: (category: {
-    category_name: string;
-    category_id: string;
-    color_hex: string;
-  }) => void;
 }
 
-const CategoryPill: React.FC<CategoryPillProps> = ({ category, onEdit, onDelete }) => {
-  const handleEdit = () => {
-    onEdit?.({
-      category_name: category.category_name,
-      category_id: category.category_id,
-      color_hex: category.color_hex,
-    });
-  };
-
-  const handleDelete = () => {
-    onDelete?.({
-      category_name: category.category_name,
-      category_id: category.category_id,
-      color_hex: category.color_hex,
-    });
-  };
-
+const CategoryPill: React.FC<CategoryPillProps> = ({ category }) => {
   return (
     <div
       className="flex flex-col justify-between h-22 bg-gradient-to-br rounded-lg shadow-sm p-3"
@@ -81,22 +44,6 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, onEdit, onDelete 
           />
           <span className="text-xs font-semibold">{category.category_name}</span>
         </div>
-        <div className="flex gap-1">
-          <button
-            onClick={handleEdit}
-            className="text-xs text-slate-600 hover:text-blue-600 px-2 py-1 rounded border border-slate-300 hover:border-blue-500 transition-colors"
-            title="Edit Category"
-          >
-            Edit
-          </button>
-          <button
-            onClick={handleDelete}
-            className="text-xs text-slate-600 hover:text-red-600 px-2 py-1 rounded border border-slate-300 hover:border-red-500 transition-colors"
-            title="Delete Category"
-          >
-            Delete
-          </button>
-        </div>
       </div>
       <div className="flex items-end justify-between">
         <div className="text-sm font-semibold">{formatCurrency(category.total)}</div>
@@ -107,7 +54,7 @@ const CategoryPill: React.FC<CategoryPillProps> = ({ category, onEdit, onDelete 
   );
 };
 
-const CategoriesCard: React.FC<CategoriesCardProps> = ({ transactions, onEdit, onDelete, onCreate }) => {
+const CategoriesCard: React.FC<CategoriesCardProps> = ({ transactions }) => {
   const groupedTransactions = useMemo(
     () => groupTransactionsByCategory(transactions || []),
     [transactions]
@@ -116,13 +63,12 @@ const CategoriesCard: React.FC<CategoriesCardProps> = ({ transactions, onEdit, o
     return (
       <div className="CategoriesCard bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
         <div className="card-header">
-          <div className="card-title">Your categories</div>
+          <div className="card-title">Your Transaction Breakdown</div>
           <div className="card-subtitle">Across ALL accounts</div>
         </div>
         <div className="empty-state">
           <div className="empty-state-icon">📊</div>
           <div className="empty-state-text">No categories found</div>
-          <div className="empty-state-description">Add your first transaction</div>
         </div>
       </div>
     );
@@ -135,8 +81,8 @@ const CategoriesCard: React.FC<CategoriesCardProps> = ({ transactions, onEdit, o
   return (
     <div className="CategoriesCard bg-white border border-gray-400 rounded-xl shadow-sm overflow-hidden">
       <div className="card-header">
-        <div className="card-title">Your categories</div>
-        <div className="card-subtitle">Across ALL accounts</div>
+        <div className="card-title ml-4">Your Transaction Breakdown</div>
+        <div className="card-subtitle ml-4">Across ALL accounts</div>
       </div>
 
       {groupedTransactions.length === 0 ? (
@@ -147,24 +93,20 @@ const CategoriesCard: React.FC<CategoriesCardProps> = ({ transactions, onEdit, o
         </div>
       ) : (
         <>
-          <div className="categories-grid categories-row categories-row-1">
+          <div className="categories-grid categories-row categories-row-1 mx-4">
             {row1Categories.map((category, index) => (
               <CategoryPill
                 key={`row1-${index}`}
                 category={category}
-                onEdit={onEdit}
-                onDelete={onDelete}
               />
             ))}
           </div>
           {hasRow2 && (
-            <div className="categories-grid categories-row categories-row-2">
+            <div className="categories-grid categories-row categories-row-2 mx-4">
               {row2Categories.map((category, index) => (
                 <CategoryPill
                   key={`row2-${index}`}
                   category={category}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
                 />
               ))}
             </div>
