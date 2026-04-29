@@ -24,9 +24,11 @@ app = FastAPI(
 # Add CORS middleware to allow frontend requests
 # Allow CORS origins via environment variable (comma-separated), fallback to development defaults
 ALLOWED_ORIGINS = environ.get("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000")
-origins = [orig.strip() for orig in ALLOWED_ORIGINS.split(",")]
-if "*" in origins:  # Allow wildcard for flexibility during development
-    pass  # Keep wildcard if explicitly set
+origins = [orig.strip() for orig in ALLOWED_ORIGINS.split(",") if orig.strip()]
+
+# Check for wildcard - if not explicitly set, add it for development
+if not "*" in origins:
+    origins.append("*")
 
 app.add_middleware(
     CORSMiddleware,
@@ -34,6 +36,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    allow_origin_regex=r"^(https?://[^\s]+)$",  # Better regex support for origins
 )
 
 app.include_router(api_router, prefix="/v1")
