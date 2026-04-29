@@ -1,10 +1,19 @@
 import React, { useState } from 'react';
 import { useCategories } from '@/hooks/useCategories';
-import type { Category } from '@/types/types';
+import type { Category, CategoryFormData } from '@/types/types';
 import { CreateModal } from './CreateModal/CreateModal';
 
 interface CategoriesListViewProps {
   categories?: Category[];
+}
+interface CategoryCardProps {
+  category: {
+    id: string;
+    name: string;
+    parent_id: string | null;
+    icon_slug: string;
+    color_hex: string;
+  };
 }
 
 const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: propCategories }) => {
@@ -122,21 +131,6 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
   );
 };
 
-interface CategoryFormData {
-  name: string;
-  icon_slug: string;
-  color_hex?: string;
-}
-
-interface CategoryCardProps {
-  category: {
-    id: string;
-    name: string;
-    parent_id: string | null;
-    icon_slug: string;
-    color_hex: string;
-  };
-}
 
 const CategoryCard: React.FC<CategoryCardProps> = ({
   category,
