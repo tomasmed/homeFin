@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import type { CategoryFormData } from '@/types/types';
+import type { CategoryFormData, Category } from '@/types/types';
 
 interface CreateModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (formData: CategoryFormData) => Promise<{ category: Category }>;
-  formData: CategoryFormData;
 }
 
 // Get icon options for selector
-const options: { value: string; label: string }[] = [
+const OPTIONS: { value: string; label: string }[] = [
   { value: 'food', label: '🍔 Food & Dining' },
   { value: 'food', label: '🛒 Groceries' },
   { value: 'transport', label: '🚗 Transport' },
@@ -41,8 +40,14 @@ export const CreateModal: React.FC<CreateModalProps> = ({
   isOpen,
   onClose,
   onSubmit,
-  formData,
 }) => {
+  // Form state - managed internally by the modal
+  const [formData, setFormData] = useState<CategoryFormData>({
+    name: '',
+    icon_slug: '',
+    color_hex: '#6b7280',
+  });
+
   // Animation state handling
   const [showModal, setShowModal] = useState(false);
 
@@ -67,6 +72,8 @@ export const CreateModal: React.FC<CreateModalProps> = ({
       console.error(error);
     }
   };
+
+  // Don't render if closed
   if (!showModal) {
     return null;
   }
@@ -109,13 +116,11 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               onChange={(e) => {
                 const newName = e.target.value;
                 setFormData({ ...formData, name: newName });
-                // Update character counter state if needed
               }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-slate-900 placeholder-slate-400 text-xs text-gray-500 mt-1 block"
               maxLength={50}
               required
               autoFocus
-              className="text-xs text-gray-500 mt-1 block"
               aria-describedby="character-counter"
             />
             <span id="character-counter" className="sr-only">
@@ -136,7 +141,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
               aria-required="true"
             >
               <option value="" disabled>Select an icon...</option>
-              {options.map((option) => (
+              {OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -180,7 +185,7 @@ export const CreateModal: React.FC<CreateModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium transition-colors"
               disabled={!formData.name?.trim()}
               aria-label="Create new category"
             >

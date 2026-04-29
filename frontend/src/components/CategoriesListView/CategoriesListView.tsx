@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useCategories } from '@/hooks/useCategories';
+import type { Category } from '@/types/types';
+import { CreateModal } from './CreateModal/CreateModal';
 
 interface CategoriesListViewProps {
   categories?: Category[];
@@ -9,21 +11,14 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
   const { data, isLoading, error, handleSubmit } = useCategories();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState<CategoryFormData>({
-    name: '',
-    icon_slug: '',
-    color_hex: '#6b7280',
-  });
 
   // Helper functions for modal
   const handleCreateClick = () => {
     setIsModalOpen(true);
-    setFormData({ name: '', icon_slug: '', color_hex: '#6b7280' });
   };
 
   const handleCloseModal = () => {
     setIsModalOpen(false);
-    setFormData({ name: '', icon_slug: '', color_hex: '#6b7280' });
   };
 
   const handleFormSubmit = async (form: CategoryFormData) => {
@@ -32,8 +27,6 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
       console.log('Created category:', result);
       // Query invalidation handled in hook, so list refreshes automatically
       handleCloseModal();
-      // Reset form
-      setFormData({ name: '', icon_slug: '', color_hex: '#6b7280' });
     } catch (err) {
       console.error('Failed to create category:', err);
     }
@@ -124,11 +117,16 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
         isOpen={isModalOpen}
         onClose={handleCloseModal}
         onSubmit={handleFormSubmit}
-        formData={formData}
       />
     </div>
   );
 };
+
+interface CategoryFormData {
+  name: string;
+  icon_slug: string;
+  color_hex?: string;
+}
 
 interface CategoryCardProps {
   category: {
