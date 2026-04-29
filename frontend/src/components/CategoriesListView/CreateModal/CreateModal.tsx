@@ -10,9 +10,8 @@ interface CreateModalProps {
 // Get icon options for selector
 const OPTIONS: { value: string; label: string }[] = [
   { value: 'food', label: '🍔 Food & Dining' },
-  { value: 'food', label: '🛒 Groceries' },
+  { value: 'groceries', label: '🛒 Groceries' },
   { value: 'transport', label: '🚗 Transport' },
-  { value: 'transport', label: '🚘 Auto/Maintenance' },
   { value: 'home', label: '🏠 Housing' },
   { value: 'utilities', label: '⚡ Utilities' },
   { value: 'health', label: '🏥 Health' },

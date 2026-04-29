@@ -30,14 +30,16 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
     setIsModalOpen(false);
   };
 
-  const handleFormSubmit = async (form: CategoryFormData) => {
+  const handleFormSubmit = async (form: CategoryFormData): Promise<{ category: Category }> => {
     try {
-      const result = await handleSubmit(form);
+      const result:Category = await handleSubmit(form);
       console.log('Created category:', result);
       // Query invalidation handled in hook, so list refreshes automatically
       handleCloseModal();
+      return {category: result};
     } catch (err) {
       console.error('Failed to create category:', err);
+      throw err;
     }
   };
 
@@ -100,12 +102,7 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
           <div className="card-title">Manage Categories</div>
           <button
             onClick={handleCreateClick}
-            className="btn btn-primary btn-sm"
-            style={{
-              backgroundColor: '#3b82f6',
-              color: '#ffffff',
-              border: 'none',
-            }}
+            className="btn btn-primary rounded-xl px-3 bg-linear-to-r from-blue-400 to-blue-600 text-white py-2 hover:shadow-lg"
           >
             [+] Create New
           </button>
@@ -150,7 +147,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           className="text-3xl mb-1"
           style={{ fontSize: '2rem', color: category.color_hex, filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))' }}
         >
-          📊
         </div>
         <div
           className="text-xl text-center px-2 w-max mx-auto"
@@ -158,10 +154,6 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         >
           {category.name}
         </div>
-      </div>
-      <div className="p-3 border-t border-gray-200">
-        <div className="text-sm text-gray-600">Total: $0.00</div>
-        <div className="text-xs text-gray-500">Transactions: 0</div>
       </div>
     </div>
   );

@@ -126,16 +126,26 @@ def get_category(category_id: str, session: Session = Depends(get_db)):
 
 @router.post("/categories", tags=["Categories"])
 def create_category(category: CategoryInput, session: Session = Depends(get_db)):
+    # Check if category with this name already exists
+    existing_name = session.exec(select(Category.name).where(Category.name == category.name)).first()
+    if existing_name:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Category with name '{category.name}' already exists"
+        )
+    
     # Generate unique color if not provided
     if not category.color_hex:
         from secrets import token_hex
         # Generate a random 6-char hex color
         color_hex = "#" + token_hex(3)
+    else:
+        color_hex = category.color_hex
     
     # Verify color doesn't conflict
     existing_categories = session.exec(select(Category)).all()
     if color_hex and color_hex in [c.color_hex for c in existing_categories]:
-        # Collision - regenerate
+        # Collision - regenerate  
         color_hex = "#" + token_hex(3)
         while color_hex in [c.color_hex for c in existing_categories]:
             color_hex = "#" + token_hex(3)
@@ -148,10 +158,15 @@ def create_category(category: CategoryInput, session: Session = Depends(get_db))
         icon_slug=category.icon_slug,
     )
 
-    session.add(db_category)
-    session.commit()
-    session.refresh(db_category)
-
+    try:
+        session.add(db_category)
+        session.commit()
+        session.refresh(db_category)
+    except Exception as e:
+        session.rollback()
+        logger.error(f"Error creating category {category.name}: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to create category: {str(e)}")
+    
     return {
         "category": {
             "id": db_category.id,
