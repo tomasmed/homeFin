@@ -32,16 +32,33 @@ export function useCategories() {
     },
   });
 
+  // DELETE mutation
+  const deleteCategoryMutation = useMutation({
+    mutationFn: async (categoryId: string) => {
+      const response = await apiClient.delete(`/v1/api/categories/${categoryId}`);
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+    },
+    onError: (error: Error, categoryId: string) => {
+      console.error(`Failed to delete category ${categoryId}:`, error);
+    },
+  });
+
   // Helper function for form submission
   const handleSubmit = async (formData: CategoryFormData): Promise<Category> => {
     const result = await createCategoryMutation.mutateAsync(formData);
     return result.category;
   };
+  
 
   return {
     ...categoriesQuery,
-    createMutation: createCategoryMutation.mutate,
+    createMutation: createCategoryMutation,
+    deleteMutation: deleteCategoryMutation.mutateAsync,
     isCreating: createCategoryMutation.isPending,
+    isDeleting: deleteCategoryMutation.isPending,
     handleSubmit,
   };
 }

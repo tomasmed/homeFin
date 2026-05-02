@@ -1,25 +1,19 @@
 import React, { useState } from 'react';
 import { useCategories } from '@/hooks/useCategories';
+import { CreateModal } from '@/components/Modals/Create';
+import { DeleteConfirmationModal } from '@/components/Modals/Delete';
+import CategoryCard from '@/components/CategoriesListView/CategoryCard';
 import type { Category, CategoryFormData } from '@/types/types';
-import { CreateModal } from './CreateModal/CreateModal';
 
 interface CategoriesListViewProps {
   categories?: Category[];
 }
-interface CategoryCardProps {
-  category: {
-    id: string;
-    name: string;
-    parent_id: string | null;
-    icon_slug: string;
-    color_hex: string;
-  };
-}
-
 const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: propCategories }) => {
-  const { data, isLoading, error, handleSubmit } = useCategories();
+  const { data, isLoading, error, handleSubmit, deleteMutation } = useCategories();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   // Helper functions for modal
   const handleCreateClick = () => {
@@ -30,13 +24,29 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
     setIsModalOpen(false);
   };
 
+  const handleDeleteClick = (category: Category) => {
+    setCategoryToDelete(category);
+  };
+
+  const handleDeleteCancel = () => {
+    setCategoryToDelete(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!categoryToDelete) return;
+    setIsDeleteLoading(true);
+    await deleteMutation(categoryToDelete.id);
+    setIsDeleteLoading(false);
+    setCategoryToDelete(null);
+  };
+
   const handleFormSubmit = async (form: CategoryFormData): Promise<{ category: Category }> => {
     try {
-      const result:Category = await handleSubmit(form);
+      const result: Category = await handleSubmit(form);
       console.log('Created category:', result);
       // Query invalidation handled in hook, so list refreshes automatically
       handleCloseModal();
-      return {category: result};
+      return { category: result };
     } catch (err) {
       console.error('Failed to create category:', err);
       throw err;
@@ -113,6 +123,7 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
             <CategoryCard
               key={category.id}
               category={category}
+              onDelete={handleDeleteClick}
             />
           ))}
         </div>
@@ -124,37 +135,16 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
         onClose={handleCloseModal}
         onSubmit={handleFormSubmit}
       />
-    </div>
-  );
-};
 
-
-const CategoryCard: React.FC<CategoryCardProps> = ({
-  category,
-}) => {
-  return (
-    <div
-      className="card-content bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
-      role="listitem"
-      aria-label={`Category: ${category.name}`}
-      tabIndex={0}
-    >
-      <div
-        className="p-4 flex flex-col items-center justify-center h-16"
-        style={{ background: `linear-gradient(135deg, ${category.color_hex}22 0%, ${category.color_hex}05 100%)` }}
-      >
-        <div
-          className="text-3xl mb-1"
-          style={{ fontSize: '2rem', color: category.color_hex, filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))' }}
-        >
-        </div>
-        <div
-          className="text-xl text-center px-2 w-max mx-auto"
-          style={{ fontSize: '1rem', fontWeight: '500', color: category.color_hex }}
-        >
-          {category.name}
-        </div>
-      </div>
+      {/* Render delete confirmation modal */}
+      <DeleteConfirmationModal
+        isOpen={categoryToDelete !== null}
+        onClose={() => setCategoryToDelete(null)}
+        category={categoryToDelete}
+        onCancel={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        isDeleting={isDeleteLoading}
+      />
     </div>
   );
 };
