@@ -1,71 +1,17 @@
 import React, { useState } from 'react';
 import { useCategories } from '@/hooks/useCategories';
+import { CreateModal } from '@/components/Modals/Create';
+import { DeleteConfirmationModal } from '@/components/Modals/Delete';
+import { CategoryCard } from '@/components/CategoriesListView/CategoryCard';
 import type { Category, CategoryFormData } from '@/types/types';
-import { CreateModal } from './CreateModal/CreateModal';
 import { Trash2 } from 'lucide-react';
-
-interface DeleteConfirmationModalProps {
-  category: Category;
-  onCancel: () => void;
-  onConfirm: () => void;
-  isLoading: boolean;
-}
-
-const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
-  category,
-  onCancel,
-  onConfirm,
-  isLoading,
-}) => {
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
-        <h3 className="text-lg font-semibold mb-2">Delete Category</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Are you sure you want to delete "{category.name}"? 
-        </p>
-        <p className="text-xs text-gray-500 mb-6">
-          This will unlink associated transactions but not delete them.
-        </p>
-        <div className="flex justify-end gap-2">
-          <button
-            onClick={onCancel}
-            disabled={isLoading}
-            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isLoading}
-            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
-          >
-            {isLoading ? 'Deleting...' : 'Delete'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-interface CategoriesListViewProps {
-  categories?: Category[];
-}
-interface CategoryCardProps {
-  category: {
-    id: string;
-    name: string;
-    parent_id: string | null;
-    icon_slug: string;
-    color_hex: string;
-  };
-  onDelete: (category: Category) => void;
-};
 
 const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: propCategories }) => {
   const { data, isLoading, error, handleSubmit, deleteMutation } = useCategories();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
+  const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
   // Helper functions for modal
   const handleCreateClick = () => {
@@ -86,7 +32,9 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
 
   const handleDeleteConfirm = async () => {
     if (!categoryToDelete) return;
+    setIsDeleteLoading(true);
     await deleteMutation(categoryToDelete.id);
+    setIsDeleteLoading(false);
     setCategoryToDelete(null);
   };
 
@@ -188,15 +136,16 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
 
       {/* Render delete confirmation modal */}
       <DeleteConfirmationModal
-        category={categoryToDelete || { id: '', name: '', parent_id: null, icon_slug: '', color_hex: '' }}
+        isOpen={categoryToDelete !== null}
+        onClose={() => setCategoryToDelete(null)}
+        category={categoryToDelete}
         onCancel={handleDeleteCancel}
         onConfirm={handleDeleteConfirm}
-        isLoading={deleteMutation.isExecuting}
+        isDeleting={isDeleteLoading}
       />
     </div>
   );
 };
-
 
 const CategoryCard: React.FC<CategoryCardProps> = ({
   category,
@@ -222,6 +171,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           className="text-3xl mb-1"
           style={{ fontSize: '2rem', color: category.color_hex, filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))' }}
         >
+          
         </div>
         <div
           className="text-xl text-center px-2 w-max mx-auto"

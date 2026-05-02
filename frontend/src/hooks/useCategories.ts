@@ -51,11 +51,12 @@ export function useCategories() {
     const result = await createCategoryMutation.mutateAsync(formData);
     return result.category;
   };
+  
 
   return {
     ...categoriesQuery,
-    createMutation: createCategoryMutation.mutate,
-    deleteMutation: deleteCategoryMutation,
+    createMutation: createCategoryMutation,
+    deleteMutation: deleteCategoryMutation.mutateAsync,
     isCreating: createCategoryMutation.isPending,
     isDeleting: deleteCategoryMutation.isPending,
     handleSubmit,
