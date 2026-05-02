@@ -2,7 +2,51 @@ import React, { useState } from 'react';
 import { useCategories } from '@/hooks/useCategories';
 import type { Category, CategoryFormData } from '@/types/types';
 import { CreateModal } from './CreateModal/CreateModal';
+import { Trash2 } from 'lucide-react';
 
+interface DeleteConfirmationModalProps {
+  category: Category;
+  onCancel: () => void;
+  onConfirm: () => void;
+  isLoading: boolean;
+}
+
+const DeleteConfirmationModal: React.FC<DeleteConfirmationModalProps> = ({
+  category,
+  onCancel,
+  onConfirm,
+  isLoading,
+}) => {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
+        <h3 className="text-lg font-semibold mb-2">Delete Category</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Are you sure you want to delete "{category.name}"? 
+        </p>
+        <p className="text-xs text-gray-500 mb-6">
+          This will unlink associated transactions but not delete them.
+        </p>
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={onCancel}
+            disabled={isLoading}
+            className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            disabled={isLoading}
+            className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:opacity-50 transition-colors"
+          >
+            {isLoading ? 'Deleting...' : 'Delete'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 interface CategoriesListViewProps {
   categories?: Category[];
 }
@@ -14,12 +58,14 @@ interface CategoryCardProps {
     icon_slug: string;
     color_hex: string;
   };
-}
+  onDelete: (category: Category) => void;
+};
 
 const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: propCategories }) => {
-  const { data, isLoading, error, handleSubmit } = useCategories();
+  const { data, isLoading, error, handleSubmit, deleteMutation } = useCategories();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [categoryToDelete, setCategoryToDelete] = useState<Category | null>(null);
 
   // Helper functions for modal
   const handleCreateClick = () => {
@@ -30,13 +76,27 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
     setIsModalOpen(false);
   };
 
+  const handleDeleteClick = (category: Category) => {
+    setCategoryToDelete(category);
+  };
+
+  const handleDeleteCancel = () => {
+    setCategoryToDelete(null);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!categoryToDelete) return;
+    await deleteMutation(categoryToDelete.id);
+    setCategoryToDelete(null);
+  };
+
   const handleFormSubmit = async (form: CategoryFormData): Promise<{ category: Category }> => {
     try {
-      const result:Category = await handleSubmit(form);
+      const result: Category = await handleSubmit(form);
       console.log('Created category:', result);
       // Query invalidation handled in hook, so list refreshes automatically
       handleCloseModal();
-      return {category: result};
+      return { category: result };
     } catch (err) {
       console.error('Failed to create category:', err);
       throw err;
@@ -113,6 +173,7 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
             <CategoryCard
               key={category.id}
               category={category}
+              onDelete={handleDeleteClick}
             />
           ))}
         </div>
@@ -124,6 +185,14 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
         onClose={handleCloseModal}
         onSubmit={handleFormSubmit}
       />
+
+      {/* Render delete confirmation modal */}
+      <DeleteConfirmationModal
+        category={categoryToDelete || { id: '', name: '', parent_id: null, icon_slug: '', color_hex: '' }}
+        onCancel={handleDeleteCancel}
+        onConfirm={handleDeleteConfirm}
+        isLoading={deleteMutation.isExecuting}
+      />
     </div>
   );
 };
@@ -131,7 +200,13 @@ const CategoriesListView: React.FC<CategoriesListViewProps> = ({ categories: pro
 
 const CategoryCard: React.FC<CategoryCardProps> = ({
   category,
+  onDelete,
 }) => {
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(category);
+  };
+
   return (
     <div
       className="card-content bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
@@ -154,6 +229,14 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
         >
           {category.name}
         </div>
+        <button
+          onClick={handleDeleteClick}
+          className="mt-2 p-1 rounded-lg hover:bg-red-100 transition-colors tooltip-btn"
+          aria-label={`Delete ${category.name} category`}
+          title="Delete category"
+        >
+          <Trash2 size={16} className="text-red-500" />
+        </button>
       </div>
     </div>
   );
