@@ -37,7 +37,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           className="text-3xl mb-1"
           style={{ fontSize: '2rem', color: category.color_hex, filter: 'drop-shadow(0px 1px 1px rgba(0,0,0,0.1))' }}
         >
-          {category.icon_slug ? category.icon_slug : ''}
+          {/* {category.icon_slug ? category.icon_slug : ''} */}
         </div>
         <div
           className="text-xl text-center px-2 w-max mx-auto"
