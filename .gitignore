@@ -20,6 +20,7 @@ pnpm-debug.log*
 lerna-debug.log*
 #
 Planning/
+Agents.md
 
 # Python
 __pycache__/

@@ -55,13 +55,13 @@ def main():
     print("=" * 60)
     
     # Test 1: Health check
-    if run_curl_test("1. Health Check", "curl -s http://localhost:8000/v1/health"):
+    if run_curl_test("1. Health Check", "curl -s http://localhost:8000/health"):
         tests_passed += 1
     else:
         tests_failed += 1
     
     # Test 2: Root endpoint
-    if run_curl_test("2. Root Endpoint", f"curl -s {BASE_URL}/"):
+    if run_curl_test("2. Root Endpoint", "curl -s http://localhost:8000/"):
         tests_passed += 1
     else:
         tests_failed += 1
