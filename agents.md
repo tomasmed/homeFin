@@ -10,10 +10,11 @@ To ensure code quality and a clean git history, all contributors (including AI a
 2. **Create a feature branch** for any new feature, bug fix, or modification.
    - Branch naming convention: `feature/<feature-name>` or `bugfix/<issue-name>`.
    - Base the feature branch off the latest `main` branch (or `develop` if `main` is not yet present/active, but target `main` for releases/PRs).
-3. **Commit changes incrementally** with clear, descriptive commit messages.
-4. **Run verification steps** (e.g., tests, type-checking, linting) locally before proposing merge.
-5. **Propose a Pull Request (PR)** to merge the feature branch into `main`.
-6. **Wait for review and approval** from the repository owner before merging.
+3. **Git Identity Attribution**: Any agent or harness contributing changes must attribute commits to itself. Configure `git config user.name` and `git config user.email` to identify the agent before committing, and restore the original user configuration afterwards.
+4. **Commit changes incrementally** with clear, descriptive commit messages.
+5. **Run verification steps** (e.g., tests, type-checking, linting) locally before proposing merge.
+6. **Propose a Pull Request (PR)** to merge the feature branch into `main`.
+7. **Wait for review and approval** from the repository owner before merging.
 
 ## Project Stack & Structure
 
