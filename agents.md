@@ -14,7 +14,15 @@ To ensure code quality and a clean git history, all contributors (including AI a
 4. **Commit changes incrementally** with clear, descriptive commit messages.
 5. **Run verification steps** (e.g., tests, type-checking, linting) locally before proposing merge.
 6. **Propose a Pull Request (PR)** to merge the feature branch into `main`.
-7. **Wait for review and approval** from the repository owner before merging.
+7. **Pull Request Attribution**: Because the agent uses the developer's credentials/token to create PRs, it will appear as if the developer created the PR. To make it clear that the agent is proposing the changes for review, the agent must:
+   - Prefix the PR title with `🤖 [Agent]`.
+   - Add a banner at the top of the PR description:
+     ```markdown
+     ### 🤖 Proposed by <Agent Name> (AI Agent)
+
+     This Pull Request was generated and proposed by **<Agent Name>** using the developer's credentials.
+     ```
+8. **Wait for review and approval** from the repository owner before merging.
 
 ## Project Stack & Structure
 
