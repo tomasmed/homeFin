@@ -9,6 +9,9 @@ import subprocess
 import json
 import sys
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 BASE_URL = "http://localhost:8000/v1"
 
 tests_passed = 0
@@ -78,9 +81,12 @@ def main():
         tests_failed += 1
     
     # Test 4: Create account
-    if run_curl_test("4. Create Account", "curl -s -X POST http://localhost:8000/v1/api/accounts \
-  -H \"Content-Type: application/json\" \
-  -d '{\"name\":\"Test\",\"institution\":\"Test Bank\",\"account_type\":\"checking\",\"currency\":\"USD\"}'"):
+    create_cmd = (
+        'curl -s -X POST http://localhost:8000/v1/api/accounts '
+        '-H "Content-Type: application/json" '
+        '-d "{\\"name\\":\\"Test\\",\\"institution\\":\\"Test Bank\\",\\"account_type\\":\\"checking\\",\\"currency\\":\\"USD\\"}"'
+    )
+    if run_curl_test("4. Create Account", create_cmd):
         tests_passed += 1
     else:
         tests_failed += 1
