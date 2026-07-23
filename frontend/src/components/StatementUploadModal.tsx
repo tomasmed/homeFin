@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, FileText, Loader2, Upload, X } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAccounts } from '@/hooks/useAccounts';
 import { useStatements } from '@/hooks/useStatements';
+import apiClient from '@/lib/api';
 
 interface StatementUploadModalProps {
   isOpen: boolean;
@@ -14,10 +16,12 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
   onClose,
   defaultAccountId = '',
 }) => {
+  const queryClient = useQueryClient();
   const { data: accountsData } = useAccounts();
   const { uploadStatement, isUploading } = useStatements();
 
   const [selectedAccountId, setSelectedAccountId] = useState<string>(defaultAccountId);
+  const [newAccountName, setNewAccountName] = useState('Main Checking Account');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -68,11 +72,25 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
     e.preventDefault();
     setErrorMsg(null);
 
-    const accountIdToUse = selectedAccountId || (accounts.length > 0 ? accounts[0].id : '');
+    let accountIdToUse = selectedAccountId || (accounts.length > 0 ? accounts[0].id : '');
+
     if (!accountIdToUse) {
-      setErrorMsg('Please select an account.');
-      return;
+      try {
+        const createRes = await apiClient.post('/v1/api/accounts', {
+          name: newAccountName.trim() || 'Main Checking Account',
+          institution: 'Bank',
+          account_type: 'checking',
+          currency: 'USD',
+        });
+        accountIdToUse = createRes.data.account.id;
+        queryClient.invalidateQueries({ queryKey: ['accounts'] });
+      } catch (err: unknown) {
+        const errorObj = err as { response?: { data?: { detail?: string } }; message?: string };
+        setErrorMsg(errorObj.response?.data?.detail || 'Failed to create target account.');
+        return;
+      }
     }
+
     if (!selectedFile) {
       setErrorMsg('Please select a PDF statement file to upload.');
       return;
@@ -143,23 +161,38 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Account Selection */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
-                Target Account
-              </label>
-              <select
-                value={selectedAccountId || (accounts.length > 0 ? accounts[0].id : '')}
-                onChange={(e) => setSelectedAccountId(e.target.value)}
-                className="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-sm font-medium text-gray-800 focus:border-blue-500 focus:bg-white focus:outline-none transition"
-              >
-                {accounts.map((acc) => (
-                  <option key={acc.id} value={acc.id}>
-                    {acc.name} ({acc.institution} - {acc.account_type})
-                  </option>
-                ))}
-              </select>
-            </div>
+            {/* Account Selection or Account Creation */}
+            {accounts.length > 0 ? (
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Target Account
+                </label>
+                <select
+                  value={selectedAccountId || accounts[0].id}
+                  onChange={(e) => setSelectedAccountId(e.target.value)}
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-sm font-medium text-gray-800 focus:border-blue-500 focus:bg-white focus:outline-none transition"
+                >
+                  {accounts.map((acc) => (
+                    <option key={acc.id} value={acc.id}>
+                      {acc.name} ({acc.institution} - {acc.account_type})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : (
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1">
+                  Target Account Name (Will be created)
+                </label>
+                <input
+                  type="text"
+                  value={newAccountName}
+                  onChange={(e) => setNewAccountName(e.target.value)}
+                  placeholder="e.g. Main Checking Account"
+                  className="w-full rounded-xl border border-gray-200 bg-gray-50 p-2.5 text-sm font-medium text-gray-800 focus:border-blue-500 focus:bg-white focus:outline-none transition"
+                />
+              </div>
+            )}
 
             {/* Drag & Drop PDF Zone */}
             <div>
