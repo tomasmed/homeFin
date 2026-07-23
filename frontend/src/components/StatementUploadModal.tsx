@@ -9,12 +9,14 @@ interface StatementUploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultAccountId?: string;
+  onUploadSuccess?: (accountId: string, statementId: string) => void;
 }
 
 export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
   isOpen,
   onClose,
   defaultAccountId = '',
+  onUploadSuccess,
 }) => {
   const queryClient = useQueryClient();
   const { data: accountsData } = useAccounts();
@@ -107,6 +109,7 @@ export const StatementUploadModal: React.FC<StatementUploadModalProps> = ({
         count: res.created_transactions_count,
       });
       setSelectedFile(null);
+      onUploadSuccess?.(accountIdToUse, res.statement.id);
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { detail?: string } }; message?: string };
       const msg = errorObj.response?.data?.detail || errorObj.message || 'Failed to upload and parse statement.';

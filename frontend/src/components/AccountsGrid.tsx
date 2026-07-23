@@ -10,9 +10,12 @@ import type { Account } from '@/types/types'
 
 export function AccountsGrid() {
   const { data: accountsData, isLoading: isLoadingAccounts, error: accountsError } = useAccounts()
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null)
+  const [userSelectedAccountId, setUserSelectedAccountId] = useState<string | null>(null)
   const [selectedStatementId, setSelectedStatementId] = useState<string | null>(null)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+
+  const accounts = accountsData?.accounts || []
+  const selectedAccountId = userSelectedAccountId || (accounts.length > 0 ? accounts[0].id : null)
 
   const {
     transactions,
@@ -22,12 +25,17 @@ export function AccountsGrid() {
 
   const handleAccountSelect = (accountId: string) => {
     if (selectedAccountId === accountId) {
-      setSelectedAccountId(null)
+      setUserSelectedAccountId(null)
       setSelectedStatementId(null)
     } else {
-      setSelectedAccountId(accountId)
+      setUserSelectedAccountId(accountId)
       setSelectedStatementId(null)
     }
+  }
+
+  const handleUploadSuccess = (accountId: string, statementId: string) => {
+    setUserSelectedAccountId(accountId)
+    setSelectedStatementId(statementId)
   }
 
   if (isLoadingAccounts) {
@@ -55,8 +63,6 @@ export function AccountsGrid() {
       </div>
     )
   }
-
-  const accounts = accountsData?.accounts || []
 
   return (
     <>
@@ -141,6 +147,7 @@ export function AccountsGrid() {
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         defaultAccountId={selectedAccountId || undefined}
+        onUploadSuccess={handleUploadSuccess}
       />
     </>
   )
