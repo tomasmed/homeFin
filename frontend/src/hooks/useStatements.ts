@@ -1,18 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { deleteStatement, fetchStatements, uploadStatement } from '@/lib/api';
-import type { Statement } from '@/types/types';
+import { deleteStatement, fetchStatements, uploadStatement, type StatementItem } from '@/lib/api';
 
 export function useStatements(accountId?: string | null) {
   const queryClient = useQueryClient();
 
-  const statementsQuery = useQuery<Statement[]>({
+  const statementsQuery = useQuery<StatementItem[]>({
     queryKey: ['statements', accountId],
-    queryFn: () => fetchStatements(accountId),
+    queryFn: async () => {
+      const res = await fetchStatements(accountId || undefined);
+      return res.statements;
+    },
   });
 
   const uploadMutation = useMutation({
     mutationFn: ({ accountId, file }: { accountId: string; file: File }) =>
-      uploadStatement(accountId, file),
+      uploadStatement({ accountId, file }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['statements'] });
       queryClient.invalidateQueries({ queryKey: ['transactions'] });
