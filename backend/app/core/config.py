@@ -16,7 +16,7 @@ class Settings(BaseSettings):
         extra="ignore",
     )
 
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite:///./homefin.db"
     PROJECT_NAME: str = "Financial AI API"
     VERSION: str = "1.0.0"
     DEBUG: bool = False

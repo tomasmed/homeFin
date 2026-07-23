@@ -1,21 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { groupTransactionsByCategory, formatCurrency } from '@/lib/transaction-aggregates';
+import type { Transaction } from '@/types/types';
 import { DonutChart } from './DonutChart';
 import type { DonutSegment } from './DonutChart';
 import { ProgressBarList } from './ProgressBarList';
 import { CompactCategoriesGrid } from './CompactCategoriesGrid';
 
 interface CategoriesCardProps {
-  transactions?: Array<{
-    id: string;
-    date: string;
-    amount: number;
-    description: string;
-    merchant_name?: string;
-    category_name?: string;
-    category_id?: string;
-    account_id?: string;
-  }>;
+  transactions?: Transaction[];
 }
 
 const CategoriesCard: React.FC<CategoriesCardProps> = ({ transactions }) => {

@@ -20,5 +20,9 @@ class Transaction(SQLModel, table=True):
         default=None, 
         sa_column=Column(String(255), ForeignKey("categories.id", ondelete="SET NULL"), nullable=True, index=True)
     )
+    statement_id: Optional[str] = Field(
+        default=None,
+        sa_column=Column(String(255), ForeignKey("statements.id", ondelete="SET NULL"), nullable=True, index=True)
+    )
     notes: str = Field(default="", sa_column=Column(String(1000), nullable=False))
     imported_at: datetime = Field(default_factory=datetime.utcnow)

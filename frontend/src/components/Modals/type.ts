@@ -1,3 +1,7 @@
+import type { CategoryFormData } from '@/types/types';
+
+export type CreateCategoryFormData = CategoryFormData;
+
 // Base modal props shared across all modals
 export interface BaseModalProps {
   isOpen: boolean;

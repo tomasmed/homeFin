@@ -1,8 +1,15 @@
 # HomeFin 💰
 
-HomeFin is an AI-powered financial transaction manager featuring a **FastAPI** backend and a **React + Vite + TypeScript** frontend.
+HomeFin is an AI-powered financial transaction manager featuring a **FastAPI** backend (Python) and a **React + Vite + TypeScript** frontend. It includes automatic bank PDF statement parsing, statement foreign-key data tracking, transaction management, visual analytics, and category breakdown.
 
-This project is designed for local development using containers for the backend services and native Node.js for the frontend.
+---
+
+## Features
+
+- **Bank Statement Upload & PDF Parsing**: Upload PDF account statements; automatically extracts transactions and links them to `Statement` entities for statement-level filtering.
+- **Financial Analytics & Dashboard**: Donut charts, category breakdown, progress bar lists, and account transaction grids.
+- **Category Management**: Custom categories with icons and color pill badges.
+- **REST API**: Built with FastAPI, SQLModel, and Pydantic.
 
 ---
 
@@ -10,9 +17,9 @@ This project is designed for local development using containers for the backend 
 
 Before setting up the project locally, ensure you have the following installed:
 
-* **Node.js**: Version `^18.0.0 || >=20.0.0` (Node v24 is recommended).
-* **Docker or Podman**: With `docker compose` or `podman-compose` support (to run the containerized backend).
-* **Python**: Version `3.12` or higher (only needed if running tests or backend scripts natively).
+* **Node.js**: Version `^18.0.0 || >=20.0.0` (Node v24 recommended).
+* **Docker or Podman**: With `docker compose` or `podman-compose` support (to run containerized backend).
+* **Python**: Version `3.12` or higher (for native backend execution & tests).
 * **Git**: For version control and branching.
 
 ---
@@ -23,7 +30,7 @@ Before setting up the project locally, ensure you have the following installed:
 HomeFin/
 ├── backend/            # FastAPI Backend (Python)
 ├── frontend/           # React + Vite + TypeScript Frontend
-├── docker-compose.yml  # Docker Compose config for the Backend
+├── docker-compose.yml  # Docker Compose config for Backend
 ├── tests_api.py        # Backend API integration tests
 └── CodingPractices.md  # Core development guidelines
 ```
@@ -32,78 +39,58 @@ HomeFin/
 
 ## Local Setup & Launch Instructions
 
-### 1. Launching the Backend (Containerized)
+### 1. Launching the Backend (Containerized or Local)
 
-The backend is managed in a container to isolate dependencies. It uses a **SQLite** database configured via environment variables for fast and persistent local setup.
-
-1. From the project root, create the local data directory for the SQLite volume mount:
+#### Option A: Docker Compose
+1. Create data directory:
    ```bash
    mkdir backend/data
    ```
-2. Build and launch the container in detached mode:
+2. Launch container:
    ```bash
    docker compose up -d
    ```
-3. The backend API is now running and available at **[http://localhost:8000](http://localhost:8000)**.
-4. The database is persistent and saved locally on the host under `backend/data/homefin.db`.
+   API will be available at **[http://localhost:8000](http://localhost:8000)**.
 
-### Seeding the Database
-
-To seed the database with realistic mock transactions, accounts, and categories:
-1. Copy the seed script into the container:
-   ```bash
-   docker cp backend/seed.py homefin-backend-1:/app/seed.py
-   ```
-2. Run the seed script inside the container:
-   ```bash
-   docker exec homefin-backend-1 uv run python seed.py
-   ```
-
-To inspect the backend logs:
+#### Option B: Local Python Development
 ```bash
-docker compose logs -f
+cd backend
+uv sync
+uv run uvicorn main:app --reload --port 8000
 ```
 
----
-
-### 2. Launching the Frontend (Native)
-
-1. Navigate to the `frontend/` directory:
-   ```bash
-   cd frontend
-   ```
-2. Install the dependencies:
-   ```bash
-   npm install
-   ```
-3. Start the Vite development server:
-   ```bash
-   npm run dev
-   ```
-4. Access the frontend application at **[http://localhost:5173](http://localhost:5173)**.
+### 2. Launching the Frontend
+```bash
+cd frontend
+npm install
+npm run dev
+```
+Access the application at **[http://localhost:5173](http://localhost:5173)**.
 
 ---
 
 ## Verification & Quality Standards
 
-Before committing changes or submitting a Pull Request, run the following verification steps:
+Before committing changes or submitting a Pull Request, run the full validation suites:
 
-### Frontend Checks
-Navigate to the `frontend/` directory and run:
-* **Type-Checking**: Ensure there are no TypeScript compiler errors:
-  ```bash
-  npm run typecheck
-  ```
-* **Linting**: Ensure code conforms to linting and style rules:
-  ```bash
-  npm run lint:check
-  ```
-
-### Backend Checks
-From the project root, run the integration test suite:
+### Frontend Validation Suite
+Navigate to `frontend/`:
 ```bash
-python tests_api.py
+npm run test
 ```
+Executes three validation layers:
+1. `npm run typecheck`: Strict TypeScript type checks (`tsc --noEmit`).
+2. `npm run lint:check`: ESLint check enforcing React rules, hooks, and no-explicit-any policies.
+3. `npm run build`: Production Vite build validating that all imports, assets, and component trees resolve correctly.
+
+Additionally, verify dev server logs and browser console logs for zero runtime `TypeError` issues.
+
+### Backend Validation Suite
+Navigate to `backend/`:
+```bash
+uv run pytest tests
+```
+Validates SQLModel schema definitions, database queries, PDF extraction, statement text parsing algorithms, and FastAPI API routes.
 
 ---
 
