@@ -58,6 +58,8 @@ frontend/.env.*
 # Backend
 backend/.env
 backend/.env.*
+backend/data/
+*.db
 
 # Editor directories and files
 .vscode/*

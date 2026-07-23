@@ -1,17 +1,19 @@
 from datetime import date, datetime
 from uuid import uuid4
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlmodel import Session, SQLModel, select
 
 from app.models import (
     Account,
     Category,
     CategoryInput,
+    Statement,
     Transaction,
     engine,
     get_db,
     seed_categories,
 )
+from app.services.pdf_parser import extract_text_from_pdf, parse_statement_text
 
 router = APIRouter(prefix="/api", tags=["API"])
 
@@ -331,6 +333,7 @@ def delete_category(category_id: str, session: Session = Depends(get_db)):
 def list_transactions(
     account_id: str | None = Query(default=None),
     category_id: str | None = Query(default=None),
+    statement_id: str | None = Query(default=None),
     start_date: date | None = Query(default=None),
     end_date: date | None = Query(default=None),
     session: Session = Depends(get_db),
@@ -342,6 +345,8 @@ def list_transactions(
         query = query.where(Transaction.account_id == account_id)
     if category_id:
         query = query.where(Transaction.category_id == category_id)
+    if statement_id:
+        query = query.where(Transaction.statement_id == statement_id)
     if start_date:
         query = query.where(Transaction.date >= start_date)
     if end_date:
@@ -364,6 +369,7 @@ def list_transactions(
             {
                 "id": transaction.id,
                 "account_id": transaction.account_id,
+                "statement_id": transaction.statement_id,
                 "date": transaction.date.isoformat(),
                 "amount": str(transaction.amount),
                 "description": transaction.description,
@@ -413,3 +419,128 @@ def delete_transaction(transaction_id: str, session: Session = Depends(get_db)):
     session.delete(transaction)
     session.commit()
     return {"message": "Transaction deleted successfully"}
+
+
+@router.get("/statements", tags=["Statements"])
+def list_statements(
+    account_id: str | None = Query(default=None),
+    session: Session = Depends(get_db),
+):
+    query = select(Statement)
+    if account_id:
+        query = query.where(Statement.account_id == account_id)
+
+    statements = session.exec(query.order_by(Statement.upload_date.desc())).all()
+    return {
+        "statements": [
+            {
+                "id": stmt.id,
+                "account_id": stmt.account_id,
+                "filename": stmt.filename,
+                "upload_date": stmt.upload_date.isoformat(),
+                "period_start_date": stmt.period_start_date.isoformat() if stmt.period_start_date else None,
+                "period_end_date": stmt.period_end_date.isoformat() if stmt.period_end_date else None,
+                "transaction_count": stmt.transaction_count,
+            }
+            for stmt in statements
+        ]
+    }
+
+
+@router.get("/statements/{statement_id}", tags=["Statements"])
+def get_statement(statement_id: str, session: Session = Depends(get_db)):
+    statement = session.get(Statement, statement_id)
+    if statement is None:
+        raise HTTPException(status_code=404, detail="Statement not found")
+
+    return {
+        "statement": {
+            "id": statement.id,
+            "account_id": statement.account_id,
+            "filename": statement.filename,
+            "upload_date": statement.upload_date.isoformat(),
+            "period_start_date": statement.period_start_date.isoformat() if statement.period_start_date else None,
+            "period_end_date": statement.period_end_date.isoformat() if statement.period_end_date else None,
+            "transaction_count": statement.transaction_count,
+        }
+    }
+
+
+@router.post("/statements/upload", tags=["Statements"])
+async def upload_statement(
+    account_id: str = Form(...),
+    file: UploadFile = File(...),
+    session: Session = Depends(get_db),
+):
+    account = session.get(Account, account_id)
+    if account is None:
+        raise HTTPException(status_code=404, detail="Target account not found")
+
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Only PDF files are supported")
+
+    content = await file.read()
+    try:
+        raw_text = extract_text_from_pdf(content)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to extract text from PDF: {str(e)}")
+
+    if not raw_text.strip():
+        raise HTTPException(status_code=400, detail="Could not extract readable text from PDF file")
+
+    parsed = parse_statement_text(raw_text)
+    parsed_txs = parsed["transactions"]
+
+    db_statement = Statement(
+        id=str(uuid4()),
+        account_id=account_id,
+        filename=file.filename,
+        period_start_date=parsed["period_start_date"],
+        period_end_date=parsed["period_end_date"],
+        transaction_count=len(parsed_txs),
+        raw_text=parsed["raw_text"],
+    )
+    session.add(db_statement)
+
+    created_tx_objs = []
+    for tx in parsed_txs:
+        db_tx = Transaction(
+            id=str(uuid4()),
+            account_id=account_id,
+            statement_id=db_statement.id,
+            date=tx["date"],
+            amount=tx["amount"],
+            description=tx["description"],
+            merchant_name=tx["merchant_name"],
+            notes=tx["notes"],
+        )
+        session.add(db_tx)
+        created_tx_objs.append(db_tx)
+
+    session.commit()
+    session.refresh(db_statement)
+
+    return {
+        "statement": {
+            "id": db_statement.id,
+            "account_id": db_statement.account_id,
+            "filename": db_statement.filename,
+            "upload_date": db_statement.upload_date.isoformat(),
+            "period_start_date": db_statement.period_start_date.isoformat() if db_statement.period_start_date else None,
+            "period_end_date": db_statement.period_end_date.isoformat() if db_statement.period_end_date else None,
+            "transaction_count": db_statement.transaction_count,
+        },
+        "created_transactions_count": len(created_tx_objs),
+    }
+
+
+@router.delete("/statements/{statement_id}", tags=["Statements"])
+def delete_statement(statement_id: str, session: Session = Depends(get_db)):
+    statement = session.get(Statement, statement_id)
+    if statement is None:
+        raise HTTPException(status_code=404, detail="Statement not found")
+
+    session.delete(statement)
+    session.commit()
+    return {"message": "Statement deleted successfully"}
+
