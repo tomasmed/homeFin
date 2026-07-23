@@ -38,20 +38,23 @@ const TransactionCard: React.FC<{ transactions: Transaction[] }> = ({ transactio
         </div>
 
       <div className="divide-y divide-gray-100">
-        {transactions.map((t) => (
-          <div key={t.id} className="group flex justify-between items-center px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
-            <div className="flex flex-col">
-              <div className="font-medium text-gray-900 text-sm">{t.description}</div>
-              <div className="text-xs text-gray-500 mt-0.5">
-                {new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                {t.merchant_name && <span className="ml-1.5 text-xs text-gray-400">• {t.merchant_name}</span>}
+        {transactions.map((t) => {
+          const numAmount = typeof t.amount === 'number' ? t.amount : parseFloat(String(t.amount)) || 0;
+          return (
+            <div key={t.id} className="group flex justify-between items-center px-4 py-3 border-b border-gray-100 last:border-0 hover:bg-gray-50">
+              <div className="flex flex-col">
+                <div className="font-medium text-gray-900 text-sm">{t.description}</div>
+                <div className="text-xs text-gray-500 mt-0.5">
+                  {new Date(t.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  {t.merchant_name && <span className="ml-1.5 text-xs text-gray-400">• {t.merchant_name}</span>}
+                </div>
+              </div>
+              <div className="font-semibold text-gray-900 text-sm whitespace-nowrap">
+                {numAmount > 0 ? '+' : ''}{numAmount.toFixed(2)}
               </div>
             </div>
-            <div className="font-semibold text-gray-900 text-sm whitespace-nowrap">
-              {t.amount > 0 ? '+' : ''}{t.amount.toFixed(2)}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Category Summary Footer */}

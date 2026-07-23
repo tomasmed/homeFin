@@ -48,6 +48,8 @@ This single command executes three validation layers:
 2. `npm run lint:check`: ESLint check enforcing React rules, hooks, and no-explicit-any policies.
 3. `npm run build`: Production Vite build validating that all imports, assets, and component trees resolve correctly without runtime bundling failures.
 
+Additionally, verify dev server logs and browser console logs for zero runtime `TypeError` issues (e.g. defensive numeric parsing on API responses).
+
 ### Backend Validation Suite
 Run the backend pytest suite:
 ```bash

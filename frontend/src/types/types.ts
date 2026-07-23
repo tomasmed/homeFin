@@ -10,7 +10,7 @@ export interface Account {
 export interface Transaction {
   id: string
   date: string
-  amount: number
+  amount: number | string
   description: string
   merchant_name?: string
   category_name?: string
