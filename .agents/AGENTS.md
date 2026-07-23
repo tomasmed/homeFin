@@ -6,7 +6,7 @@ This workspace-specific rules file is automatically loaded by the AI agent runti
 
 - **Branching**: Always create a feature branch (`feature/<name>`) from the default branch. Do not make direct changes or commit directly to the `main` or `develop` branches unless instructed.
 - **Pull Requests**: Propose merging feature branches into `main` via PRs. Prefix PR titles with `🤖 [Agent]` and include the standardized agent proposal banner at the top of the description.
-- **Git Identity**: Configure `git config` to attribute commits to the agent before committing, and restore the original user credentials afterwards.
+- **Git Identity & Co-Authorship**: Commits retain developer credentials (`user.name "Tomas Medina"`, `user.email "tomasmed@umich.edu"`) and append `Co-authored-by: Antigravity Agent <antigravity-bot@users.noreply.github.com>` for AI attribution.
 - **Verification**: Run frontend type checks and lint checks (`npm run typecheck && npm run lint:check`) before completing tasks or proposing changes.
 
 ## Codebase Preferences

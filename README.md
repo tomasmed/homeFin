@@ -99,5 +99,5 @@ Validates SQLModel schema definitions, database queries, PDF extraction, stateme
 Please follow the rules established in `AGENTS.md` (and summarized in `CodingPractices.md`):
 1. **Never commit directly to the `main` or `develop` branches.**
 2. **Always create a feature branch** `feature/<name>` from the latest default branch.
-3. Configure your Git user identity prior to committing if you are an AI agent.
+3. Maintain developer git identity (`Tomas Medina <tomasmed@umich.edu>`) and append `Co-authored-by: Antigravity Agent <antigravity-bot@users.noreply.github.com>` for AI agent co-authorship.
 4. Propose merge requests via Pull Requests starting with `🤖 [Agent]`.

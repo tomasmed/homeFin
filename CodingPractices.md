@@ -49,7 +49,8 @@ npm run test
 1. **Plan** - Document approaches in `./Planning/` or implementation plans.
 2. **Verify** - Run `npm run test` in `frontend/` and `uv run pytest tests` in `backend/`.
 3. **Document** - Create markdown for new patterns
-4. **Test via curl** - `curl http://localhost:8000/v1/api/...`
+4. **Git Attribution** - Maintain primary author `Tomas Medina <tomasmed@umich.edu>` and append trailer `Co-authored-by: Antigravity Agent <antigravity-bot@users.noreply.github.com>` for AI agent contributions.
+5. **Test via curl** - `curl http://localhost:8000/v1/api/...`
 
 
 **Frontend (local):**
