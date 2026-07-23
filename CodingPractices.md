@@ -35,26 +35,19 @@ homeFin/
 - Responsive classes when needed
 
 ### 1. Code Quality
-**Always run after frontend changes:**
+**Always run after frontend changes to verify types, linting, and rendering build:**
 ```bash
-npm run typecheck && npm run lint:check
+npm run test
 ```
-**TypeScript:**
-- No `any` types (use unknown or proper types)
-- Export all types
-- Define type guards for union types
 
-**Linting:**
-- ESLint with React hooks plugin
-- Fix on `npm run lint`
-- Check with `npm run lint:check`
-
-###  Testing Philosophy
+### 2. Testing Philosophy
+- Frontend: `npm run test` in `frontend/` (verifies `typecheck`, `lint:check`, and Vite production `build`).
+- Backend: `uv run pytest tests` in `backend/` (verifies SQLModel schemas, API routes, and PDF parser logic).
 - FastAPI auto-generates docs at `/docs`
 
-###  Development Workflow
-1. **Plan** - Document approaches in `./Planning/`
-2. **Verify** - After code, run `npm run typecheck && npm run lint:check`
+### Development Workflow
+1. **Plan** - Document approaches in `./Planning/` or implementation plans.
+2. **Verify** - Run `npm run test` in `frontend/` and `uv run pytest tests` in `backend/`.
 3. **Document** - Create markdown for new patterns
 4. **Test via curl** - `curl http://localhost:8000/v1/api/...`
 

@@ -9,6 +9,7 @@
     "lint": "eslint . --ext .ts,.tsx --fix",
     "lint:check": "eslint . --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck && npm run lint:check && npm run build",
     "preview": "vite preview"
   },
   "dependencies": {
